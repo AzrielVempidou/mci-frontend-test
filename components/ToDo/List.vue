@@ -93,6 +93,20 @@ async function loadData() {
 }
 async function createTask() {
   // TODO : Implement Create Task to Backend
+  try {
+    const response = await $fetch(`/api/todos`, {
+      method: 'POST',
+      body: {
+        task: taskDescription.value,
+        duration : durationTask.value,
+      }
+    })
+    taskList.value.push(response);
+    taskDescription.value = '';
+    durationTask.value = '';
+  } catch (error) {
+    console.log(error)
+  }
 }
 async function editText() {
   editable.value = true;
@@ -102,7 +116,36 @@ async function cancelEdit() {
 }
 async function updateTask(data) {
   // TODO : Implement Update Task to Backend
+  try {
+    const response = await $fetch(`/api/todos/${data.id}`, {
+      method: 'PUT',
+      body: data
+    })
+    const index = taskList.value.findIndex(task => task.id === data.id);
+    if (index !== -1) {
+      taskList.value[index] = response;
+    }
+    editable.value = false;
+    router.push('/')
+  } catch (error) {
+    console.error('Failed to update task', error);
+  }
 }
+
+async function softDeleteTask(id) {
+  try {
+    const response = await $fetch(`/api/todos/${id}`, {
+      method: 'PATCH',
+    });
+    const index = taskList.value.findIndex(task => task.id === id);
+    if (index !== -1) {
+      taskList.value[index].deletedAt = response.deletedAt;
+    }
+  } catch (error) {
+    console.error('Failed to soft delete task', error);
+  }
+}
+
 async function deleteTask(id) {
   // TODO : Implement Condition Hard Delete
   try {
